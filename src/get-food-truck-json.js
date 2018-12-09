@@ -1,4 +1,15 @@
 const requestPromise = require('request-promise');
+const { currentTime } = require('./get-date-time');
+
+const removeClosedTrucks = (results) => {
+  return results.filter((truck) => {
+    // Trucks closing at midnight are a special case in string comparisons,
+    // so we set them to 24:00 to make the comparisons cleaner.
+    if (truck.end24 === '00:00') truck.end24 = '24:00';
+
+    return truck.start24 <= currentTime && currentTime <= truck.end24;
+  });
+};
 
 const sortTrucks = (results) => {
   // Sort them alphabetically by name
@@ -16,7 +27,9 @@ const getFoodTruckJson = (uri) => {
   return requestPromise({
     uri,
     json: true,
-  }).then(sortTrucks);
+  })
+    .then(removeClosedTrucks)
+    .then(sortTrucks);
 };
 
 module.exports = getFoodTruckJson;

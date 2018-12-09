@@ -1,37 +1,20 @@
-function padNumber(value) {
-  return value >= 10
-    ? value
-    : `0${value}`;
-}
+const { currentDate } = require('./get-date-time');
 
 const createSoqlQuery = () => {
-  const currentDate = new Date(Date.now());
-  const currentTime = `${padNumber(currentDate.getHours())}:${padNumber(currentDate.getMinutes())}`;
-
   const query = {
     dayorder: {
       condition: '=',
       value: currentDate.getDay(),
     },
-    start24: {
-      condition: '<=',
-      value: currentTime,
-    },
-    end24: {
-      condition: '>=',
-      value: currentTime,
-    },
   };
 
-  let soqlQuery = '';
+  const soqlQueryParams = [];
 
   Object.keys(query).forEach((key) => {
-    soqlQuery += `${key} ${query[key].condition} '${query[key].value}' AND `;
+    soqlQueryParams.push(`${key} ${query[key].condition} '${query[key].value}'`);
   });
 
-  soqlQuery = `$where=${encodeURIComponent(soqlQuery.slice(0, -5))}`;
-
-  return soqlQuery;
+  return `$where=${encodeURIComponent(soqlQueryParams.join(' AND '))}`;
 };
 
 module.exports = createSoqlQuery;
