@@ -4,7 +4,11 @@ Node.js console application that prints out the currently open food trucks in Sa
 
 ## Installation
 
-`npm install`
+```
+git clone git@github.com:johnhforrest/food-truck-choosr.git
+cd food-truck-choosr
+npm install
+```
 
 ## Running the application
 
