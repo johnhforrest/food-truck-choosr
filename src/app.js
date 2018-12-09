@@ -1,71 +1,16 @@
-const requestPromise = require('request-promise');
+const getFoodTruckJson = require('./get-food-truck-json');
+const createSoqlQuery = require('./create-soql-query');
+const paginatedPrint = require('./paginated-print');
 
 // @TODO: Add pagination
 // @TODO: Clean up code
 // @TODO: Better output formatting
+// @TODO: Validate the time comparison and fix the 00:00 edge case
 
-function padNumber(value) {
-  return value >= 10
-    ? value
-    : `0${value}`;
-}
+const uri = `http://data.sfgov.org/resource/bbb8-hzi6.json?${createSoqlQuery()}`;
 
-const currentDate = new Date(Date.now());
-const currentTime = `${padNumber(currentDate.getHours())}:${padNumber(currentDate.getMinutes())}`;
-
-const query = {
-  dayorder: {
-    condition: '=',
-    value: currentDate.getDay(),
-  },
-  start24: {
-    condition: '<=',
-    value: currentTime,
-  },
-  end24: {
-    condition: '>=',
-    value: currentTime,
-  },
-};
-
-let sodaQuery = '';
-
-Object.keys(query).forEach((key) => {
-  sodaQuery += `${key} ${query[key].condition} '${query[key].value}' AND `;
-});
-
-sodaQuery = `$where=${encodeURIComponent(sodaQuery.slice(0, -5))}`;
-
-console.log(sodaQuery);
-
-function printResults(openTrucks) {
-  console.log('NAME\t\t\tADDRESS');
-
-  openTrucks.forEach((truck) => {
-    console.log(`${truck.applicant}\t\t\t${truck.location}`);
-  });
-}
-
-requestPromise({
-  uri: `http://data.sfgov.org/resource/bbb8-hzi6.json?${sodaQuery}`,
-  jdson: true,
-})
-  .then((resultsJson) => {
-    // Parse the JSON
-    const results = JSON.parse(resultsJson);
-
-    // Sort them alphabetically by name
-    const openTrucks = results.sort((a, b) => {
-      const applicantA = a.applicant.toUpperCase();
-      const applicantB = b.applicant.toUpperCase();
-
-      if (applicantA < applicantB) return -1;
-      if (applicantA > applicantB) return 1;
-      return 0;
-    });
-
-    printResults(openTrucks);
-  })
+getFoodTruckJson(uri)
+  .then(paginatedPrint)
   .catch((error) => {
     console.log(error);
   });
